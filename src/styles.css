@@ -1156,7 +1156,30 @@ main {
   text-transform: uppercase;
 }
 
-.consumer-mini div,
+.consumer-title-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.consumer-title-row button {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.consumer-title-row button:hover,
+.consumer-title-row button:focus-visible {
+  background: rgba(0, 0, 0, 0.26);
+}
+
+.consumer-mini > div:not(.consumer-title-row),
 .hub-cache {
   display: flex;
   flex-wrap: wrap;
@@ -1249,7 +1272,7 @@ main {
 
 .stream-controls {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr auto auto;
   gap: 12px;
   align-items: end;
   padding: 14px;

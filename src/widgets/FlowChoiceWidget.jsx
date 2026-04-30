@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pause, Play, Plus, Radio, Zap } from 'lucide-react';
+import { Pause, Play, Plus, Radio, RotateCcw, X, Zap } from 'lucide-react';
 
 const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
@@ -14,7 +14,7 @@ const initialCollectors = [
   { id: 'collector-2', label: 'Collector 2', late: false, received: [] },
 ];
 
-function FlowIllustration({ type, active, history, collectors, replay, buffer }) {
+function FlowIllustration({ type, active, history, collectors, replay, buffer, onRemoveCollector }) {
   const isState = type === 'state';
   const latest = history.at(-1);
   const replayCache = isState ? (latest ? [latest] : []) : history.slice(-replay);
@@ -34,7 +34,12 @@ function FlowIllustration({ type, active, history, collectors, replay, buffer })
           <div className="consumer-list">
             {collectors.map((collector) => (
               <div className={`consumer-mini ${collector.late ? 'late' : ''}`} key={`${type}-${collector.id}`}>
-                <b>{collector.label}</b>
+                <div className="consumer-title-row">
+                  <b>{collector.label}</b>
+                  <button type="button" aria-label={`Remove ${collector.label}`} onClick={() => onRemoveCollector(collector.id)}>
+                    <X size={11} />
+                  </button>
+                </div>
                 <small>{collector.late ? 'joined late' : 'live'}</small>
                 <div>
                   {collector.received.length === 0 ? (
@@ -157,6 +162,15 @@ function FlowChoiceWidget() {
     ]);
   };
 
+  const removeCollector = (type, collectorId) => {
+    const setter = type === 'state' ? setStateCollectors : setSharedCollectors;
+
+    setter((current) => {
+      if (current.length <= 1) return current;
+      return current.filter((collector) => collector.id !== collectorId);
+    });
+  };
+
   useEffect(() => {
     if (!isRunning) return undefined;
 
@@ -230,7 +244,15 @@ function FlowChoiceWidget() {
         </button>
       </div>
 
-      <FlowIllustration type="state" active={activeType === 'state'} history={history} collectors={stateCollectors} replay={1} buffer={0} />
+      <FlowIllustration
+        type="state"
+        active={activeType === 'state'}
+        history={history}
+        collectors={stateCollectors}
+        replay={1}
+        buffer={0}
+        onRemoveCollector={(collectorId) => removeCollector('state', collectorId)}
+      />
       <FlowIllustration
         type="shared"
         active={activeType === 'shared'}
@@ -238,6 +260,7 @@ function FlowChoiceWidget() {
         collectors={sharedCollectors}
         replay={replay}
         buffer={buffer}
+        onRemoveCollector={(collectorId) => removeCollector('shared', collectorId)}
       />
 
       <div className="stream-controls">
@@ -252,6 +275,10 @@ function FlowChoiceWidget() {
         <button type="button" className="secondary-button compact" onClick={addLateCollector}>
           <Plus size={14} />
           Add late collector
+        </button>
+        <button type="button" className="secondary-button compact" onClick={() => reset(activeType)}>
+          <RotateCcw size={14} />
+          Reset collectors
         </button>
       </div>
 
