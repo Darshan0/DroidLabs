@@ -1,0 +1,265 @@
+# Technical Requirements Document: DroidLab // Insights
+
+## 1. Project Overview
+
+DroidLab // Insights is a high-fidelity, interactive educational platform for Android engineers. Inspired by the explorable explanation style of Lainlog, it pairs technical prose with pokeable React widgets that make Android internals easier to inspect, test, and reason about.
+
+The platform focuses on concepts that are usually invisible while coding: coroutine stream timing, lifecycle transitions, UI inflation, threading, references, memory retention, and rendering behavior.
+
+## 2. Product Goals
+
+### 2.1 Active Learning
+
+Readers should move from passive reading into direct experimentation. Every major concept should include a live sandbox where the learner can change parameters and immediately observe cause and effect.
+
+### 2.2 System Visualization
+
+The application should turn hidden Android runtime behavior into visible simulation. Examples include:
+
+- Coroutine Flow emissions moving through operators.
+- Fragment lifecycle callbacks advancing as a state machine.
+- View inflation appearing inside a device frame.
+- Memory or thread activity represented as changing visual state.
+
+### 2.3 Engineering Aesthetic
+
+The visual language should feel like a focused engineering tool:
+
+- Dark mode first.
+- High contrast.
+- Minimal decoration.
+- Dense but readable information hierarchy.
+- Technical iconography through `lucide-react`.
+- Accessible blue and amber indicators for active states, warnings, and technical signals.
+
+### 2.4 Modular Content
+
+New Android lessons should be added as standalone `Post` objects. Each post owns its metadata, prose, icon, and optional interactive sandbox.
+
+## 3. Technical Architecture
+
+### 3.1 Tech Stack
+
+- Framework: React.js with functional components and hooks.
+- Styling: Tailwind CSS for layout, spacing, typography, and stateful UI styling.
+- Animation: Tailwind transitions plus scoped CSS for specialized motion.
+- Icons: `lucide-react`.
+- State management: local React state with `useState`, `useRef`, `useEffect`, and `useCallback`.
+
+No global state library is required for Phase 1. Widget-level state should stay local to preserve simple ownership and zero-latency interactions.
+
+### 3.2 Application Model
+
+The app is a single-page experience with state-based routing:
+
+- Feed view: rendered when `activePost` is `null`.
+- Detail view: rendered when `activePost` references a selected post.
+- Navigation: selecting a card assigns `activePost`; returning to the feed resets it.
+- Scroll management: navigating into a post must call `window.scrollTo(0, 0)` so each lesson starts at the top.
+
+### 3.3 Component Boundaries
+
+Recommended top-level modules:
+
+- `App`: owns route state and global layout.
+- `PostFeed`: renders filters and post cards.
+- `PostCard`: displays metadata and opens a post.
+- `PostDetail`: renders article content and its interactive sandbox.
+- `WidgetShell`: standard wrapper for sandbox title, status, controls, and figure label.
+- Topic widgets: independent simulations such as `FlowDebounceWidget` and `LifecycleHeartbeatWidget`.
+
+## 4. Core Functional Modules
+
+### 4.1 Feed Engine
+
+The feed is powered by a central `POSTS` array. Each post must include:
+
+- Stable ID.
+- Title.
+- Category.
+- Publication date.
+- Estimated reading time.
+- Excerpt.
+- Icon.
+- Interactive widget.
+- Technical prose.
+
+Feed cards must support:
+
+- Hover transitions.
+- Clear category and read-time metadata.
+- Click or keyboard activation.
+- Responsive one-column and two-column layouts.
+
+Category filtering should be supported by the feed model, even if Phase 1 ships with all categories visible by default.
+
+### 4.2 Explorable Widget System
+
+Every widget must follow the simulation pattern.
+
+#### The Brain
+
+The logic layer simulates the technical process. It may use:
+
+- `useEffect` for simulation loops.
+- `setInterval` or `requestAnimationFrame` for time-based updates.
+- `useRef` for mutable values that should not trigger rerenders.
+- Small immutable state updates for visible simulation state.
+
+Long-running loops must clean up after themselves on unmount.
+
+#### The Pipe
+
+The view layer turns invisible state into visible motion or structure. Examples:
+
+- Flow values moving through an operator pipe.
+- Lifecycle phases lighting up in order.
+- A mock Android device frame inflating UI after `onCreateView`.
+- Thread lanes showing main-thread and background work.
+
+#### The Controls
+
+The input layer lets readers perturb the system. Controls may include:
+
+- Buttons for discrete events.
+- Sliders for timing and thresholds.
+- Toggles for mode changes.
+- Step controls for state machines.
+
+Controls must update simulation state immediately.
+
+## 5. Phase 1 Featured Widgets
+
+### 5.1 `Flow.debounce()` Sandbox
+
+Purpose: explain why rapid emissions are dropped and why the last value survives after the debounce window.
+
+Required behavior:
+
+- Emit values manually through a button.
+- Allow users to adjust `debounceTime`.
+- Track emission timestamps.
+- Mark emissions that arrive too quickly as dropped.
+- Animate active emissions moving across a pipe.
+- Fade, shrink, or otherwise visually vaporize dropped emissions.
+
+Implementation notes:
+
+- Use `useRef` for interval handles and timestamp-sensitive logic where needed.
+- Keep the emission array bounded by removing items once they leave the visible pipe.
+- Do not block the main thread with expensive per-frame computation.
+
+### 5.2 Lifecycle Heartbeat
+
+Purpose: explain how a Fragment progresses through lifecycle states and when its UI exists.
+
+Required behavior:
+
+- Provide a step-through state machine.
+- Represent stages such as `onAttach`, `onCreate`, `onCreateView`, `onStart`, and `onResume`.
+- Highlight the active lifecycle callback.
+- Show a mock Android device frame.
+- Inflate or reveal UI only after `onCreateView`.
+- Reset or loop cleanly after the final phase.
+
+Implementation notes:
+
+- Keep lifecycle data as a structured array.
+- Avoid coupling stage labels to visual rendering logic.
+- Make future lifecycle extension straightforward, including `onPause`, `onStop`, `onDestroyView`, and `onDetach`.
+
+## 6. Data Schema
+
+```ts
+interface Post {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  readTime: string;
+  excerpt: string;
+  icon: JSX.Element;
+  widget: JSX.Element;
+  content: JSX.Element;
+}
+```
+
+### 6.1 Example Categories
+
+- Coroutines
+- Architecture
+- UI Toolkit
+- Performance
+- Memory
+- Threading
+
+## 7. Non-Functional Requirements
+
+### 7.1 Performance
+
+- Simulations should feel smooth and target 60fps where animation is continuous.
+- Time-based simulation code should avoid stale closures.
+- Intervals and animation frames must be cleaned up on unmount.
+- Visual state arrays should be pruned to prevent unbounded growth.
+
+### 7.2 Responsiveness
+
+- Feed and article views must work on mobile, tablet, and desktop.
+- Complex sandboxes may be optimized for desktop interaction, but they must remain readable on smaller screens.
+- Widget layouts should collapse predictably rather than overflowing.
+
+### 7.3 Accessibility
+
+- Use high-contrast colors for text and technical indicators.
+- Buttons and interactive controls must have clear focus states.
+- Inputs should have labels.
+- Color should not be the only carrier of critical meaning.
+- Icon-only controls should include accessible names.
+
+### 7.4 Maintainability
+
+- Keep widgets self-contained.
+- Keep post metadata centralized.
+- Prefer structured data over hard-coded visual branches.
+- Use concise component names that describe the Android concept being taught.
+
+## 8. Content Requirements
+
+Each post should include:
+
+- A concrete Android engineering problem.
+- A short conceptual model.
+- One interactive widget.
+- At least one failure mode or misconception.
+- A practical takeaway for production Android work.
+
+The prose should be technical, compact, and specific. Avoid generic tutorial language when the widget can demonstrate the behavior directly.
+
+## 9. Future Roadmap
+
+### 9.1 Memory Leak Visualizer
+
+A heap-style widget showing object references. Objects retained past their expected lifecycle should turn into leak candidates with a clear ownership path.
+
+### 9.2 Jetpack Compose vs. XML Toggle
+
+A code-diffing visualizer that compares equivalent UI implementations in XML Views and Jetpack Compose.
+
+### 9.3 Thread Lane Visualizer
+
+A dispatcher simulation showing how `Dispatchers.Main`, `Dispatchers.IO`, and CPU-bound work move through different execution lanes.
+
+### 9.4 View Measurement Explorer
+
+A layout pass visualizer for `onMeasure`, `onLayout`, and `onDraw`, including examples of nested layout cost.
+
+## 10. Phase 1 Acceptance Criteria
+
+- The feed displays at least two posts.
+- Clicking a post opens a detail view and scrolls to the top.
+- The detail view renders technical prose and one sandbox.
+- `Flow.debounce()` sandbox supports manual emissions and debounce delay changes.
+- Lifecycle sandbox supports step-through lifecycle progression.
+- Simulations clean up intervals or animation frames on unmount.
+- The UI remains usable on desktop and tablet widths.
+- Primary text and controls meet high-contrast dark-mode accessibility expectations.
