@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock, MousePointer2, Share2 } from 'lucide-react';
+import { ArrowLeft, Clock, Share2 } from 'lucide-react';
 
 function PostDetail({ post, onBack }) {
   return (
@@ -30,14 +30,7 @@ function PostDetail({ post, onBack }) {
         <div className="lesson-layout">
           <div className="prose lesson-body">{post.content}</div>
 
-          <aside className="sandbox-section sticky-sandbox" aria-label="Interactive sandbox">
-            <div className="section-title">
-              <h2>
-                <MousePointer2 size={24} />
-                Lab
-              </h2>
-              <span>keep poking</span>
-            </div>
+          <aside className="sandbox-section sticky-sandbox" aria-label="Interactive illustration">
             {post.widget}
           </aside>
         </div>

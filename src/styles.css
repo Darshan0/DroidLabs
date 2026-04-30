@@ -1027,6 +1027,44 @@ main {
     #08111f;
 }
 
+.flow-illustration {
+  display: grid;
+  gap: 10px;
+  opacity: 0.56;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.flow-illustration.active {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.illustration-title {
+  display: grid;
+  gap: 3px;
+  padding: 0 2px;
+}
+
+.illustration-title strong {
+  color: #f8fafc;
+  font-size: 17px;
+}
+
+.illustration-title span {
+  color: #91a0b4;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.docs-flow-scene.compact {
+  min-height: 300px;
+  padding: 12px;
+}
+
 .docs-flow-scene::before,
 .docs-flow-scene::after {
   position: absolute;
