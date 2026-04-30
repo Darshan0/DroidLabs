@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "cp index.source.html index.html && vite build",
+    "build:pages-root": "npm run build && cp dist/index.html index.html && rm -rf assets && cp -R dist/assets assets",
     "preview": "vite preview",
     "deploy": "npm run build && gh-pages -d dist"
   },
